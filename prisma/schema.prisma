@@ -1,0 +1,585 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum HouseholdMode {
+  INDIVIDUAL
+  COUPLE
+  FAMILY
+}
+
+enum CurrencyCode {
+  USD
+  INR
+  EUR
+  GBP
+  CAD
+}
+
+enum MemberRole {
+  OWNER
+  PARTNER
+  ADULT
+  DEPENDENT
+  VIEWER
+}
+
+enum MemberStatus {
+  ACTIVE
+  INVITED
+  REMOVED
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum TransactionVisibility {
+  SHARED
+  PRIVATE
+}
+
+enum SplitMethod {
+  EQUAL
+  INCOME_PERCENT
+  CUSTOM
+}
+
+enum GoalType {
+  EMERGENCY_FUND
+  HOUSE_DOWN_PAYMENT
+  CAR
+  VACATION
+  WEDDING
+  EDUCATION
+  RETIREMENT
+  CUSTOM
+}
+
+enum GoalPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum AssetType {
+  CASH
+  BANK
+  INVESTMENT
+  RETIREMENT
+  PROPERTY
+  VEHICLE
+  OTHER
+}
+
+enum LiabilityType {
+  CREDIT_CARD
+  STUDENT_LOAN
+  CAR_LOAN
+  MORTGAGE
+  PERSONAL_LOAN
+  OTHER
+}
+
+enum MilestoneKey {
+  UNDERSTAND_CASH_FLOW
+  STAY_WITHIN_BUDGET
+  ONE_MONTH_EMERGENCY
+  ELIMINATE_HIGH_INTEREST_DEBT
+  THREE_TO_SIX_MONTH_EMERGENCY
+  SAVE_MAJOR_GOALS
+  PREPARE_HOME
+  GROW_NET_WORTH
+}
+
+enum AffordabilityBand {
+  COMFORTABLE
+  MANAGEABLE
+  HIGH_RISK
+  NOT_AFFORDABLE
+}
+
+enum RecurrenceFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum CategoryGroup {
+  INCOME
+  HOUSING
+  ESSENTIAL
+  LIFESTYLE
+  DEBT
+  SAVINGS
+  TRANSFER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+enum NotificationKind {
+  INSIGHT
+  BILL
+  GOAL
+  BUDGET
+  SYSTEM
+}
+
+/// Better Auth user. Financial data is scoped through HouseholdMember.
+model User {
+  id            String   @id
+  name          String
+  email         String
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+
+  sessions    Session[]
+  accounts    Account[]
+  members     HouseholdMember[]
+  preferences UserPreference?
+  sentInvites Invitation[]      @relation("InvitationInviter")
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+/// OAuth / credential accounts for Better Auth (not bank accounts).
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  issuer                String   @default("local:credential")
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Household {
+  id                      String         @id @default(cuid())
+  name                    String
+  mode                    HouseholdMode
+  currency                CurrencyCode
+  locale                  String         @default("en-US")
+  onboardingComplete      Boolean        @default(false)
+  onboardingStep          Int            @default(0)
+  onboardingDraft         Json?
+  splitMethod             SplitMethod    @default(EQUAL)
+  customSplitJson         Json?
+  emergencyFundTargetMinor BigInt        @default(0)
+  demoKey                 String?        @unique
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+
+  members           HouseholdMember[]
+  invitations       Invitation[]
+  financialAccounts FinancialAccount[]
+  categories        Category[]
+  transactions      Transaction[]
+  budgets           Budget[]
+  recurrenceRules   RecurrenceRule[]
+  goals             FinancialGoal[]
+  assets            Asset[]
+  liabilities       Liability[]
+  snapshots         NetWorthSnapshot[]
+  homeScenarios     HomeScenario[]
+  notifications     Notification[]
+  milestones        FinancialMilestone[]
+
+  @@map("household")
+}
+
+model HouseholdMember {
+  id           String       @id @default(cuid())
+  householdId  String
+  household    Household    @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  userId       String?
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  displayName  String
+  role         MemberRole
+  status       MemberStatus @default(ACTIVE)
+  isDependent  Boolean      @default(false)
+  dateOfBirth  DateTime?
+  color        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  paidTransactions   Transaction[] @relation("PaidByMember")
+  ownedAccounts      FinancialAccount[]
+  contributions      GoalContribution[]
+
+  @@index([householdId])
+  @@index([userId])
+  @@map("household_member")
+}
+
+model Invitation {
+  id          String           @id @default(cuid())
+  householdId String
+  household   Household        @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  email       String
+  role        MemberRole
+  token       String           @unique
+  status      InvitationStatus @default(PENDING)
+  invitedById String?
+  invitedBy   User?            @relation("InvitationInviter", fields: [invitedById], references: [id], onDelete: SetNull)
+  expiresAt   DateTime
+  createdAt   DateTime         @default(now())
+
+  @@index([householdId, email])
+  @@map("invitation")
+}
+
+model FinancialAccount {
+  id          String    @id @default(cuid())
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  name        String
+  institution String?
+  type        String
+  currency    CurrencyCode
+  balanceMinor BigInt   @default(0)
+  ownerMemberId String?
+  ownerMember HouseholdMember? @relation(fields: [ownerMemberId], references: [id], onDelete: SetNull)
+  isShared    Boolean   @default(true)
+  archived    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  transactionsFrom Transaction[] @relation("FromAccount")
+  transactionsTo   Transaction[] @relation("ToAccount")
+
+  @@index([householdId])
+  @@map("financial_account")
+}
+
+model Category {
+  id          String        @id @default(cuid())
+  householdId String
+  household   Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  name        String
+  group       CategoryGroup
+  parentId    String?
+  parent      Category?     @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[]    @relation("CategoryTree")
+  icon        String?
+  color       String?
+  isSystem    Boolean       @default(true)
+  sortOrder   Int           @default(0)
+
+  transactions     Transaction[]
+  budgetCategories BudgetCategory[]
+  recurrenceRules  RecurrenceRule[]
+
+  @@index([householdId])
+  @@map("category")
+}
+
+model Transaction {
+  id              String                 @id @default(cuid())
+  householdId     String
+  household       Household              @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  type            TransactionType
+  amountMinor     BigInt
+  currency        CurrencyCode
+  date            DateTime
+  merchant        String?
+  description     String?
+  notes           String?
+  tags            String[]               @default([])
+  visibility      TransactionVisibility  @default(SHARED)
+  paidByMemberId  String?
+  paidBy          HouseholdMember?       @relation("PaidByMember", fields: [paidByMemberId], references: [id], onDelete: SetNull)
+  categoryId      String?
+  category        Category?              @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  accountId       String?
+  account         FinancialAccount?      @relation("FromAccount", fields: [accountId], references: [id], onDelete: SetNull)
+  transferAccountId String?
+  transferAccount FinancialAccount?      @relation("ToAccount", fields: [transferAccountId], references: [id], onDelete: SetNull)
+  splitMethod     SplitMethod?
+  splitJson       Json?
+  recurrenceRuleId String?
+  recurrenceRule  RecurrenceRule?        @relation(fields: [recurrenceRuleId], references: [id], onDelete: SetNull)
+  importBatchId   String?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@index([householdId, date])
+  @@index([householdId, type])
+  @@index([categoryId])
+  @@map("transaction")
+}
+
+model Budget {
+  id            String    @id @default(cuid())
+  householdId   String
+  household     Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  year          Int
+  month         Int
+  incomeMinor   BigInt    @default(0)
+  rollover      Boolean   @default(false)
+  warningPct    Int       @default(80)
+  templateKey   String?
+  confirmed     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  categories BudgetCategory[]
+
+  @@unique([householdId, year, month])
+  @@map("budget")
+}
+
+model BudgetCategory {
+  id           String   @id @default(cuid())
+  budgetId     String
+  budget       Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  categoryId   String
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  limitMinor   BigInt
+  rollover     Boolean  @default(false)
+
+  @@unique([budgetId, categoryId])
+  @@map("budget_category")
+}
+
+model RecurrenceRule {
+  id              String              @id @default(cuid())
+  householdId     String
+  household       Household           @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  name            String
+  type            TransactionType
+  amountMinor     BigInt
+  currency        CurrencyCode
+  frequency       RecurrenceFrequency
+  interval        Int                 @default(1)
+  nextRunOn       DateTime
+  merchant        String?
+  categoryId      String?
+  category        Category?           @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  accountId       String?
+  paidByMemberId  String?
+  active          Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  transactions Transaction[]
+
+  @@index([householdId])
+  @@map("recurrence_rule")
+}
+
+model FinancialGoal {
+  id                 String       @id @default(cuid())
+  householdId        String
+  household          Household    @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  name               String
+  type               GoalType
+  targetMinor        BigInt
+  currentMinor       BigInt       @default(0)
+  monthlyContributionMinor BigInt @default(0)
+  targetDate         DateTime?
+  priority           GoalPriority @default(MEDIUM)
+  notes              String?
+  archived           Boolean      @default(false)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  contributions GoalContribution[]
+
+  @@index([householdId])
+  @@map("financial_goal")
+}
+
+model GoalContribution {
+  id          String           @id @default(cuid())
+  goalId      String
+  goal        FinancialGoal    @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  memberId    String?
+  member      HouseholdMember? @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  amountMinor BigInt
+  date        DateTime
+  note        String?
+
+  @@index([goalId])
+  @@map("goal_contribution")
+}
+
+model Asset {
+  id          String    @id @default(cuid())
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  name        String
+  type        AssetType
+  valueMinor  BigInt
+  currency    CurrencyCode
+  notes       String?
+  asOf        DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([householdId])
+  @@map("asset")
+}
+
+model Liability {
+  id              String        @id @default(cuid())
+  householdId     String
+  household       Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  name            String
+  type            LiabilityType
+  balanceMinor    BigInt
+  interestApr     Decimal       @db.Decimal(8, 4)
+  minPaymentMinor BigInt
+  currency        CurrencyCode
+  notes           String?
+  asOf            DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([householdId])
+  @@map("liability")
+}
+
+model NetWorthSnapshot {
+  id              String    @id @default(cuid())
+  householdId     String
+  household       Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  asOf            DateTime
+  assetsMinor     BigInt
+  liabilitiesMinor BigInt
+  netWorthMinor   BigInt
+  createdAt       DateTime  @default(now())
+
+  @@index([householdId, asOf])
+  @@map("net_worth_snapshot")
+}
+
+model HomeScenario {
+  id                    String             @id @default(cuid())
+  householdId           String
+  household             Household          @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  name                  String
+  isBaseline            Boolean            @default(false)
+  propertyPriceMinor    BigInt
+  downPaymentMinor      BigInt
+  currentSavingsMinor   BigInt
+  annualRatePercent     Decimal            @db.Decimal(8, 4)
+  termMonths            Int
+  propertyTaxAnnualMinor BigInt            @default(0)
+  insuranceAnnualMinor  BigInt             @default(0)
+  hoaMonthlyMinor       BigInt             @default(0)
+  maintenanceMonthlyMinor BigInt           @default(0)
+  utilitiesMonthlyMinor BigInt             @default(0)
+  closingCostMinor      BigInt             @default(0)
+  movingCostMinor       BigInt             @default(0)
+  extraPaymentMinor     BigInt             @default(0)
+  expectedIncomeChangeMinor BigInt         @default(0)
+  rentMonthlyMinor      BigInt             @default(0)
+  appreciationPct       Decimal            @default(3) @db.Decimal(8, 4)
+  inflationPct          Decimal            @default(2.5) @db.Decimal(8, 4)
+  investmentReturnPct   Decimal            @default(6) @db.Decimal(8, 4)
+  band                  AffordabilityBand?
+  notes                 String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  @@index([householdId])
+  @@map("home_scenario")
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  householdId String
+  household   Household        @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  kind        NotificationKind
+  title       String
+  body        String
+  href        String?
+  readAt      DateTime?
+  createdAt   DateTime         @default(now())
+
+  @@index([householdId, readAt])
+  @@map("notification")
+}
+
+model UserPreference {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme            String   @default("system")
+  locale           String   @default("en-US")
+  reduceMotion     Boolean  @default(false)
+  showCalendarHeatmap Boolean @default(true)
+  housingTerm      String   @default("auto")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("user_preference")
+}
+
+model FinancialMilestone {
+  id          String       @id @default(cuid())
+  householdId String
+  household   Household    @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  key         MilestoneKey
+  earnedAt    DateTime     @default(now())
+  notified    Boolean      @default(false)
+
+  @@unique([householdId, key])
+  @@map("financial_milestone")
+}

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lifebudget-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lifebudget
+      POSTGRES_PASSWORD: lifebudget
+      POSTGRES_DB: lifebudget
+    ports:
+      - "5433:5432"
+    volumes:
+      - lifebudget_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lifebudget -d lifebudget"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  lifebudget_pgdata:
