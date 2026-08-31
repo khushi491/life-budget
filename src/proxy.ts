@@ -12,9 +12,8 @@ export async function proxy(request: NextRequest) {
   if (!session && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  if (session && (pathname === "/login" || pathname === "/signup")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
+  // Do not bounce /login or /signup based on cookie presence. A stale
+  // session cookie would otherwise loop: signup → dashboard → login → dashboard.
   return NextResponse.next();
 }
 

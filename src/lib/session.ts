@@ -16,6 +16,19 @@ export async function requireSession() {
   return session;
 }
 
+export async function redirectIfAuthenticated() {
+  const session = await getSession();
+  if (!session) return;
+  const member = await prisma.householdMember.findFirst({
+    where: { userId: session.user.id, status: "ACTIVE" },
+    include: { household: true },
+  });
+  if (!member || !member.household.onboardingComplete) {
+    redirect("/onboarding");
+  }
+  redirect("/dashboard");
+}
+
 export async function getActiveHouseholdContext() {
   const session = await requireSession();
   const member = await prisma.householdMember.findFirst({

@@ -6,6 +6,22 @@ import { getEnv } from "@/lib/env";
 
 const env = getEnv();
 
+function trustedAppOrigins(appUrl: string) {
+  const origins = new Set([appUrl]);
+  try {
+    const parsed = new URL(appUrl);
+    const port = parsed.port ? `:${parsed.port}` : "";
+    if (parsed.hostname === "localhost") {
+      origins.add(`${parsed.protocol}//127.0.0.1${port}`);
+    } else if (parsed.hostname === "127.0.0.1") {
+      origins.add(`${parsed.protocol}//localhost${port}`);
+    }
+  } catch {
+    // Keep the configured URL even if it is not parseable.
+  }
+  return [...origins];
+}
+
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
@@ -14,7 +30,7 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 10,
   },
-  trustedOrigins: [env.NEXT_PUBLIC_APP_URL],
+  trustedOrigins: trustedAppOrigins(env.NEXT_PUBLIC_APP_URL),
   session: {
     cookieCache: {
       enabled: true,

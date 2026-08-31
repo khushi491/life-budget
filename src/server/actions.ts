@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { auth, DEMO_PASSWORD, DEMO_USERS } from "@/lib/auth";
+import { authActionErrorMessage } from "@/lib/auth-errors";
 import { prisma } from "@/lib/db";
 import { isDemoModeEnabled } from "@/lib/env";
 import { toMinor } from "@/lib/finance";
@@ -37,10 +38,11 @@ export async function signInAction(formData: FormData): Promise<void> {
   try {
     await auth.api.signInEmail({
       body: parsed.data,
-      headers: await headers(),
     });
-  } catch {
-    redirect(`/login?error=${encodeURIComponent("We could not sign you in with those details.")}`);
+  } catch (error) {
+    redirect(
+      `/login?error=${encodeURIComponent(authActionErrorMessage(error, "We could not sign you in with those details."))}`,
+    );
   }
   redirect("/dashboard");
 }
@@ -57,10 +59,11 @@ export async function signUpAction(formData: FormData): Promise<void> {
   try {
     await auth.api.signUpEmail({
       body: parsed.data,
-      headers: await headers(),
     });
-  } catch {
-    redirect(`/signup?error=${encodeURIComponent("We could not create that account. Try a different email.")}`);
+  } catch (error) {
+    redirect(
+      `/signup?error=${encodeURIComponent(authActionErrorMessage(error, "We could not create that account. Please try again."))}`,
+    );
   }
   redirect("/onboarding");
 }
@@ -78,7 +81,6 @@ export async function demoLoginAction(profile: "individual" | "couple" | "family
   try {
     await auth.api.signInEmail({
       body: { email: demo.email, password: DEMO_PASSWORD },
-      headers: await headers(),
     });
   } catch {
     redirect(`/?error=${encodeURIComponent("Demo data is not seeded yet. Run npm run db:seed.")}`);

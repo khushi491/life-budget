@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/form";
+import { redirectIfAuthenticated } from "@/lib/session";
 import { signInAction } from "@/server/actions";
 
 export default async function LoginPage({
@@ -8,6 +9,7 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  await redirectIfAuthenticated();
   const { error } = await searchParams;
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6">
