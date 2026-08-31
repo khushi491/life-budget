@@ -22,6 +22,21 @@ function trustedAppOrigins(appUrl: string) {
   return [...origins];
 }
 
+function isPrivateDevOrigin(origin: string) {
+  try {
+    const { hostname } = new URL(origin);
+    return (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("10.") ||
+      hostname.endsWith(".local")
+    );
+  } catch {
+    return false;
+  }
+}
+
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
@@ -30,7 +45,14 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 10,
   },
-  trustedOrigins: trustedAppOrigins(env.NEXT_PUBLIC_APP_URL),
+  trustedOrigins: async (request) => {
+    const origins = trustedAppOrigins(env.NEXT_PUBLIC_APP_URL);
+    const headerOrigin = request?.headers.get("origin");
+    if (headerOrigin && isPrivateDevOrigin(headerOrigin)) {
+      origins.push(headerOrigin);
+    }
+    return [...new Set(origins)];
+  },
   session: {
     cookieCache: {
       enabled: true,

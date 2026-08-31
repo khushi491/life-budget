@@ -11,5 +11,5 @@ export default async function OnboardingPage() {
   const draft =
     (member?.household.onboardingDraft as Record<string, unknown> | null) ??
     undefined;
-  return <OnboardingWizard initial={draft} />;
+  return <OnboardingWizard initial={draft} userName={session.user.name} />;
 }

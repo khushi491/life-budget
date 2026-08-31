@@ -2,10 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { auth, DEMO_PASSWORD, DEMO_USERS } from "@/lib/auth";
 import { authActionErrorMessage } from "@/lib/auth-errors";
+import { signInWithEmail, signUpWithEmail } from "@/lib/auth-request";
 import { prisma } from "@/lib/db";
 import { isDemoModeEnabled } from "@/lib/env";
 import { toMinor } from "@/lib/finance";
@@ -27,6 +28,22 @@ function parseMoney(value: string | undefined, fallback = 0n): bigint {
   return toMinor(value);
 }
 
+function withOwnerName(input: unknown, ownerName: string) {
+  if (!input || typeof input !== "object") return input;
+  const value = input as {
+    members?: { displayName?: string; role?: string; isDependent?: boolean }[];
+  };
+  const members =
+    value.members && value.members.length > 0
+      ? value.members.map((member, index) => ({
+          ...member,
+          displayName:
+            member.displayName?.trim() || (index === 0 ? ownerName : member.displayName),
+        }))
+      : [{ displayName: ownerName, role: "OWNER" as const, isDependent: false }];
+  return { ...value, members };
+}
+
 export async function signInAction(formData: FormData): Promise<void> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
@@ -36,10 +53,9 @@ export async function signInAction(formData: FormData): Promise<void> {
     redirect(`/login?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? "Please check your details.")}`);
   }
   try {
-    await auth.api.signInEmail({
-      body: parsed.data,
-    });
+    await signInWithEmail(parsed.data);
   } catch (error) {
+    unstable_rethrow(error);
     redirect(
       `/login?error=${encodeURIComponent(authActionErrorMessage(error, "We could not sign you in with those details."))}`,
     );
@@ -57,10 +73,9 @@ export async function signUpAction(formData: FormData): Promise<void> {
     redirect(`/signup?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? "Please check your details.")}`);
   }
   try {
-    await auth.api.signUpEmail({
-      body: parsed.data,
-    });
+    await signUpWithEmail(parsed.data);
   } catch (error) {
+    unstable_rethrow(error);
     redirect(
       `/signup?error=${encodeURIComponent(authActionErrorMessage(error, "We could not create that account. Please try again."))}`,
     );
@@ -79,10 +94,9 @@ export async function demoLoginAction(profile: "individual" | "couple" | "family
   }
   const demo = DEMO_USERS[profile];
   try {
-    await auth.api.signInEmail({
-      body: { email: demo.email, password: DEMO_PASSWORD },
-    });
-  } catch {
+    await signInWithEmail({ email: demo.email, password: DEMO_PASSWORD });
+  } catch (error) {
+    unstable_rethrow(error);
     redirect(`/?error=${encodeURIComponent("Demo data is not seeded yet. Run npm run db:seed.")}`);
   }
   redirect("/dashboard");
@@ -103,13 +117,23 @@ export async function demoLoginFamily(): Promise<void> {
 export async function saveOnboardingAction(input: unknown, complete: boolean) {
   const session = await getSession();
   if (!session) redirect("/login");
-  const parsed = onboardingSchema.safeParse(input);
+  const parsed = onboardingSchema.safeParse(
+    withOwnerName(input, session.user.name),
+  );
   if (!parsed.success) {
     return {
       error: parsed.error.issues[0]?.message ?? "Please check this step.",
     };
   }
   const data = parsed.data;
+  const members = data.members
+    .map((member, index) => ({
+      ...member,
+      displayName:
+        member.displayName.trim() ||
+        (index === 0 ? session.user.name.trim() || "Me" : ""),
+    }))
+    .filter((member, index) => index === 0 || member.displayName.length > 0);
   const existing = await prisma.householdMember.findFirst({
     where: { userId: session.user.id, status: "ACTIVE" },
   });
@@ -138,7 +162,7 @@ export async function saveOnboardingAction(input: unknown, complete: boolean) {
             onboardingComplete: complete,
             onboardingStep: complete ? 13 : 1,
             members: {
-              create: data.members.map((member, index) => ({
+              create: members.map((member, index) => ({
                 displayName: member.displayName,
                 role: index === 0 ? "OWNER" : member.role,
                 isDependent: member.isDependent,

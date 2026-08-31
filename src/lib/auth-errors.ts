@@ -26,6 +26,11 @@ export function authActionErrorMessage(
     case "INVALID_EMAIL_OR_PASSWORD":
     case "INVALID_PASSWORD":
       return "We could not sign you in with those details.";
+    case "FAILED_TO_CREATE_USER":
+    case "FAILED_TO_CREATE_SESSION":
+      return "We could not finish creating that account. Please try again in a moment.";
+    case "VALIDATION_ERROR":
+      return "Please check your name, email, and password.";
     default:
       return fallback;
   }

@@ -81,11 +81,20 @@ const empty: OnboardingInput = {
 
 export function OnboardingWizard({
   initial,
+  userName,
 }: {
   initial?: Partial<OnboardingInput>;
+  userName?: string;
 }) {
   const [step, setStep] = useState(0);
-  const [data, setData] = useState<OnboardingInput>({ ...empty, ...initial });
+  const [data, setData] = useState<OnboardingInput>({
+    ...empty,
+    ...initial,
+    members:
+      initial?.members && initial.members.length > 0
+        ? initial.members
+        : [{ displayName: userName ?? "", role: "OWNER", isDependent: false }],
+  });
   const [error, setError] = useState<string | null>(null);
 
   async function persist(complete: boolean) {
