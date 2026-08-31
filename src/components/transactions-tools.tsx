@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/form";
 import { importCsvAction } from "@/server/actions";
+import { importBankDemoAction } from "@/server/finance-actions";
 import { toast } from "sonner";
 
 export function TransactionsTools() {
@@ -37,6 +38,11 @@ export function TransactionsTools() {
         </select>
         <Button type="submit" variant="outline">
           Filter
+        </Button>
+      </form>
+      <form action={importBankDemoAction}>
+        <Button type="submit" variant="outline">
+          Import demo bank rows
         </Button>
       </form>
       <label className="text-sm">

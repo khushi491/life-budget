@@ -115,6 +115,60 @@ export const onboardingSchema = z.object({
   propertyPrice: optionalMoneySchema,
 });
 
+export const liabilitySchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(2, "Give this debt a name."),
+  type: z.enum([
+    "CREDIT_CARD",
+    "STUDENT_LOAN",
+    "CAR_LOAN",
+    "MORTGAGE",
+    "PERSONAL_LOAN",
+    "OTHER",
+  ]),
+  balance: moneyInputSchema,
+  interestApr: z
+    .string()
+    .trim()
+    .regex(/^\d+(?:\.\d{1,4})?$/, "Enter an interest rate."),
+  minPayment: moneyInputSchema,
+});
+
+export const assetSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(2, "Give this asset a name."),
+  type: z.enum([
+    "CASH",
+    "BANK",
+    "INVESTMENT",
+    "RETIREMENT",
+    "PROPERTY",
+    "VEHICLE",
+    "OTHER",
+  ]),
+  value: moneyInputSchema,
+});
+
+export const billSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(2, "Give this bill a name."),
+  amount: moneyInputSchema,
+  frequency: z.enum(["WEEKLY", "BIWEEKLY", "MONTHLY", "QUARTERLY", "YEARLY"]),
+  categoryId: z.string().optional(),
+  nextRunOn: z.string().min(1, "Choose the next date."),
+});
+
+export const inviteSchema = z.object({
+  email: z.email("Enter a valid email address."),
+  role: z.enum(["PARTNER", "ADULT", "DEPENDENT", "VIEWER"]),
+});
+
+export const memberNameSchema = z.object({
+  displayName: z.string().trim().min(1, "Enter a name."),
+  role: z.enum(["PARTNER", "ADULT", "DEPENDENT", "VIEWER"]),
+  isDependent: z.boolean().optional(),
+});
+
 export type TransactionInput = z.infer<typeof transactionSchema>;
 export type GoalInput = z.infer<typeof goalSchema>;
 export type HomeScenarioInput = z.infer<typeof homeScenarioSchema>;

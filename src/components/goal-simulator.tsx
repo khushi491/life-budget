@@ -4,13 +4,17 @@ import { useMemo, useState } from "react";
 import { monthsToGoal } from "@/lib/finance";
 import { formatMonths, formatMoney } from "@/lib/format";
 import type { CurrencyCode } from "@/lib/finance";
+import { Button } from "@/components/ui/button";
+import { updateGoalPaceAction } from "@/server/finance-actions";
 
 export function GoalSimulator({
+  goalId,
   currency,
   currentMinor,
   targetMinor,
   monthlyMinor,
 }: {
+  goalId: string;
   currency: CurrencyCode;
   currentMinor: string;
   targetMinor: string;
@@ -44,6 +48,17 @@ export function GoalSimulator({
       <p className="mt-2 text-sm">
         You would arrive in {formatMonths(estimate.months)}.
       </p>
+      <form action={updateGoalPaceAction} className="mt-3">
+        <input type="hidden" name="id" value={goalId} />
+        <input
+          type="hidden"
+          name="monthlyContribution"
+          value={monthly.toFixed(2)}
+        />
+        <Button type="submit" size="sm" variant="outline">
+          Save this pace
+        </Button>
+      </form>
     </div>
   );
 }

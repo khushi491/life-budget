@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getActiveHouseholdContext } from "@/lib/session";
 import { getTransactionsPage } from "@/server/queries";
 import { formatDate, formatMoney } from "@/lib/format";
@@ -5,6 +6,19 @@ import { Badge } from "@/components/ui/form";
 import { ConfirmButton } from "@/components/confirm-button";
 import { deleteTransactionAction } from "@/server/actions";
 import { TransactionsTools } from "@/components/transactions-tools";
+
+function transactionsHref(input: {
+  q?: string;
+  type?: string;
+  page?: number;
+}) {
+  const params = new URLSearchParams();
+  if (input.q) params.set("q", input.q);
+  if (input.type) params.set("type", input.type);
+  if (input.page && input.page > 1) params.set("page", String(input.page));
+  const query = params.toString();
+  return query ? `/transactions?${query}` : "/transactions";
+}
 
 export default async function TransactionsPage({
   searchParams,
@@ -27,14 +41,15 @@ export default async function TransactionsPage({
     type,
     page: Number(params.page ?? 1),
   });
+  const totalPages = Math.max(1, Math.ceil(data.total / data.take));
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-3xl font-semibold">Money in and out</h1>
         <p className="text-muted-foreground mt-2">
-          Search, filter, import a CSV, or add a movement. Bank connections can
-          be added later through the import provider.
+          Search, filter, import a CSV, or add a movement. Demo bank rows can be
+          pulled in without a live bank connection.
         </p>
       </header>
       <TransactionsTools />
@@ -85,9 +100,37 @@ export default async function TransactionsPage({
           </tbody>
         </table>
       </div>
-      <p className="text-muted-foreground text-sm">
-        Page {data.page} · {data.total} movements
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-muted-foreground text-sm">
+          Page {data.page} of {totalPages} · {data.total} movements
+        </p>
+        <div className="flex gap-3 text-sm">
+          {data.page > 1 ? (
+            <Link
+              className="text-primary"
+              href={transactionsHref({
+                q: params.q,
+                type,
+                page: data.page - 1,
+              })}
+            >
+              Previous
+            </Link>
+          ) : null}
+          {data.page < totalPages ? (
+            <Link
+              className="text-primary"
+              href={transactionsHref({
+                q: params.q,
+                type,
+                page: data.page + 1,
+              })}
+            >
+              Next
+            </Link>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

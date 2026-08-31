@@ -8,7 +8,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
   const session = request.cookies.get("better-auth.session_token");
-  const isPublic = publicPaths.has(pathname);
+  const isPublic = publicPaths.has(pathname) || pathname.startsWith("/invite/");
   if (!session && !isPublic) {
     return NextResponse.redirect(new URL("/login", request.url));
   }

@@ -22,6 +22,8 @@ import {
 } from "@/lib/schemas";
 import { getActiveHouseholdContext, getSession } from "@/lib/session";
 import { analyzeHomePurchase } from "@/lib/finance";
+import { materializeOnboarding } from "@/lib/onboarding-seed";
+import { syncMilestones } from "@/lib/milestones";
 
 function parseMoney(value: string | undefined, fallback = 0n): bigint {
   if (!value) return fallback;
@@ -114,7 +116,11 @@ export async function demoLoginFamily(): Promise<void> {
   await demoLoginAction("family");
 }
 
-export async function saveOnboardingAction(input: unknown, complete: boolean) {
+export async function saveOnboardingAction(
+  input: unknown,
+  complete: boolean,
+  step = 0,
+) {
   const session = await getSession();
   if (!session) redirect("/login");
   const parsed = onboardingSchema.safeParse(
@@ -136,7 +142,12 @@ export async function saveOnboardingAction(input: unknown, complete: boolean) {
     .filter((member, index) => index === 0 || member.displayName.length > 0);
   const existing = await prisma.householdMember.findFirst({
     where: { userId: session.user.id, status: "ACTIVE" },
+    include: { household: true },
   });
+  const wasComplete = existing?.household.onboardingComplete ?? false;
+  const onboardingStep = complete ? 13 : Math.min(12, Math.max(0, step));
+
+  let householdId = existing?.householdId;
 
   await prisma.$transaction(async (tx) => {
     const household = existing
@@ -149,7 +160,7 @@ export async function saveOnboardingAction(input: unknown, complete: boolean) {
             locale: data.locale,
             onboardingDraft: data,
             onboardingComplete: complete,
-            onboardingStep: complete ? 13 : 12,
+            onboardingStep,
           },
         })
       : await tx.household.create({
@@ -160,7 +171,7 @@ export async function saveOnboardingAction(input: unknown, complete: boolean) {
             locale: data.locale,
             onboardingDraft: data,
             onboardingComplete: complete,
-            onboardingStep: complete ? 13 : 1,
+            onboardingStep,
             members: {
               create: members.map((member, index) => ({
                 displayName: member.displayName,
@@ -171,6 +182,7 @@ export async function saveOnboardingAction(input: unknown, complete: boolean) {
             },
           },
         });
+    householdId = household.id;
 
     if (!existing) {
       await tx.category.createMany({
@@ -194,7 +206,28 @@ export async function saveOnboardingAction(input: unknown, complete: boolean) {
       });
     }
 
-    if (complete) {
+    if (complete && !wasComplete) {
+      const owner =
+        existing ??
+        (await tx.householdMember.findFirstOrThrow({
+          where: { householdId: household.id, userId: session.user.id },
+        }));
+      const account = await tx.financialAccount.findFirstOrThrow({
+        where: { householdId: household.id },
+      });
+      const categories = await tx.category.findMany({
+        where: { householdId: household.id },
+        select: { id: true, name: true },
+      });
+      await materializeOnboarding(tx, {
+        householdId: household.id,
+        memberId: owner.id,
+        accountId: account.id,
+        currency: data.currency,
+        data,
+        categories,
+      });
+    } else if (complete) {
       const months = data.emergencyTargetMonths;
       const essentials = parseMoney(data.fixedBills);
       await tx.household.update({
@@ -204,7 +237,10 @@ export async function saveOnboardingAction(input: unknown, complete: boolean) {
     }
   });
 
-  if (complete) redirect("/dashboard");
+  if (complete && householdId) {
+    await syncMilestones(householdId);
+    redirect("/dashboard");
+  }
   return { ok: true };
 }
 
@@ -258,6 +294,7 @@ export async function createTransactionAction(formData: FormData) {
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
   revalidatePath("/income");
+  await syncMilestones(context.household.id);
   return { ok: true };
 }
 
@@ -271,6 +308,7 @@ export async function deleteTransactionAction(id: string) {
   });
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
+  await syncMilestones(context.household.id);
   return { ok: true };
 }
 
@@ -336,6 +374,7 @@ export async function saveBudgetAction(input: {
   });
   revalidatePath("/budget");
   revalidatePath("/dashboard");
+  await syncMilestones(context.household.id);
   return { ok: true };
 }
 
@@ -368,6 +407,7 @@ export async function saveGoalAction(formData: FormData) {
     },
   });
   revalidatePath("/goals");
+  await syncMilestones(context.household.id);
 }
 
 export async function saveHomeScenarioAction(formData: FormData) {
@@ -450,6 +490,7 @@ export async function saveHomeScenarioAction(formData: FormData) {
   });
   revalidatePath("/house");
   revalidatePath("/scenarios");
+  await syncMilestones(context.household.id);
 }
 
 export async function updateHouseholdModeAction(
@@ -526,5 +567,6 @@ export async function importCsvAction(
     ),
   );
   revalidatePath("/transactions");
+  await syncMilestones(context.household.id);
   return { ok: true, count: rows.length };
 }

@@ -81,12 +81,16 @@ const empty: OnboardingInput = {
 
 export function OnboardingWizard({
   initial,
+  initialStep = 0,
   userName,
 }: {
   initial?: Partial<OnboardingInput>;
+  initialStep?: number;
   userName?: string;
 }) {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(
+    Math.min(STEPS.length - 1, Math.max(0, initialStep)),
+  );
   const [data, setData] = useState<OnboardingInput>({
     ...empty,
     ...initial,
@@ -97,10 +101,20 @@ export function OnboardingWizard({
   });
   const [error, setError] = useState<string | null>(null);
 
-  async function persist(complete: boolean) {
+  async function persist(complete: boolean, nextStep = step) {
     setError(null);
-    const result = await saveOnboardingAction(data, complete);
-    if (result && "error" in result && result.error) setError(result.error);
+    const result = await saveOnboardingAction(data, complete, nextStep);
+    if (result && "error" in result && result.error) {
+      setError(result.error);
+      return false;
+    }
+    return true;
+  }
+
+  async function goNext() {
+    const next = Math.min(STEPS.length - 1, step + 1);
+    const ok = await persist(false, next);
+    if (ok) setStep(next);
   }
 
   return (
@@ -139,13 +153,13 @@ export function OnboardingWizard({
           </Button>
         ) : null}
         {step < STEPS.length - 1 ? (
-          <Button onClick={() => setStep((s) => s + 1)}>Continue</Button>
+          <Button onClick={() => void goNext()}>Continue</Button>
         ) : (
-          <Button onClick={() => void persist(true)}>
+          <Button onClick={() => void persist(true, STEPS.length)}>
             See my starting point
           </Button>
         )}
-        <Button variant="ghost" onClick={() => void persist(false)}>
+        <Button variant="ghost" onClick={() => void persist(false, step)}>
           Save and resume later
         </Button>
       </div>

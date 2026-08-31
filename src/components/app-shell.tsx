@@ -86,6 +86,11 @@ export function AppShell({
                 </Link>
               ))}
             </nav>
+            <form action={signOutAction} className="mt-3">
+              <Button variant="ghost" className="w-full justify-start">
+                Sign out
+              </Button>
+            </form>
           </div>
         ) : null}
         <main className="px-4 py-6 pb-24 lg:px-8 lg:pb-10">{children}</main>

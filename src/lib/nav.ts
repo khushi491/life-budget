@@ -2,6 +2,7 @@ export const APP_NAV = [
   { href: "/dashboard", label: "Home", short: "Home" },
   { href: "/journey", label: "Journey", short: "Path" },
   { href: "/transactions", label: "Money in & out", short: "Money" },
+  { href: "/income", label: "Income", short: "Income" },
   { href: "/budget", label: "Budget", short: "Budget" },
   { href: "/goals", label: "Goals", short: "Goals" },
   { href: "/house", label: "House", short: "House" },

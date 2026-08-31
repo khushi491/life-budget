@@ -1,16 +1,24 @@
+import Link from "next/link";
 import { getActiveHouseholdContext } from "@/lib/session";
-import { getDashboardData } from "@/server/queries";
+import { getDashboardData, type PeriodView } from "@/server/queries";
 import { formatMoney } from "@/lib/format";
 import { Card, CardHint, CardTitle } from "@/components/ui/card";
 import { CashFlow } from "@/components/flow";
 
-export default async function ReportsPage() {
+export default async function ReportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const { view: viewParam } = await searchParams;
+  const view: PeriodView =
+    viewParam === "month" || viewParam === "quarter" ? viewParam : "year";
   const { household, member } = await getActiveHouseholdContext();
   const data = await getDashboardData({
     householdId: household.id,
     memberId: member.id,
     role: member.role,
-    view: "year",
+    view,
   });
 
   return (
@@ -18,11 +26,29 @@ export default async function ReportsPage() {
       <header>
         <h1 className="text-3xl font-semibold">Reports</h1>
         <p className="text-muted-foreground mt-2">
-          A year-to-date reading of the same numbers used on the dashboard.
+          The same numbers used on the dashboard, grouped by period.
         </p>
+        <div className="mt-4 flex gap-2">
+          {(["month", "quarter", "year"] as const).map((option) => (
+            <Link
+              key={option}
+              href={`/reports?view=${option}`}
+              className={`rounded-full px-3 py-1 text-sm ${view === option ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+            >
+              {option}
+            </Link>
+          ))}
+        </div>
       </header>
       <Card>
-        <CardTitle>Year-to-date cash flow</CardTitle>
+        <CardTitle>
+          {view === "year"
+            ? "Year-to-date"
+            : view === "quarter"
+              ? "This quarter"
+              : "This month"}{" "}
+          cash flow
+        </CardTitle>
         <CardHint>
           Income {formatMoney(data.incomeMinor, household.currency)} · spending{" "}
           {formatMoney(data.expenseMinor, household.currency)}
@@ -36,7 +62,7 @@ export default async function ReportsPage() {
         </div>
       </Card>
       <Card>
-        <CardTitle>Insights this year</CardTitle>
+        <CardTitle>Insights this period</CardTitle>
         <ul className="mt-4 space-y-3">
           {data.allInsights.map((insight) => (
             <li key={insight.id}>
