@@ -15,7 +15,7 @@ test("onboarding is reachable after signup", async ({ page }) => {
   await page.getByLabel("Password").fill("PlaywrightPass1");
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page.getByRole("heading", { name: "Welcome" })).toBeVisible();
-  await page.getByRole("button", { name: /Next/ }).click();
+  await page.getByRole("button", { name: "Next", exact: true }).click();
   await expect(page.getByText("Who is this for?")).toBeVisible();
 });
 
