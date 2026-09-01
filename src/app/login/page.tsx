@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/form";
 import { redirectIfAuthenticated } from "@/lib/session";
@@ -12,8 +13,8 @@ export default async function LoginPage({
   await redirectIfAuthenticated();
   const { error } = await searchParams;
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6">
-      <h1 className="text-3xl font-semibold">Welcome back</h1>
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6 text-zinc-950">
+      <h1 className="text-3xl font-bold">Welcome back</h1>
       <p className="text-muted-foreground mt-2 text-sm">
         Sign in to continue your household’s financial journey.
       </p>
@@ -40,7 +41,7 @@ export default async function LoginPage({
           />
         </div>
         <Button type="submit" className="w-full">
-          Continue
+          Sign in <ChevronsRight className="h-4 w-4" />
         </Button>
       </form>
       <p className="text-muted-foreground mt-6 text-sm">

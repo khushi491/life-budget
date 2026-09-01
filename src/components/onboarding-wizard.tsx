@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/form";
+import { Highlight } from "@/components/highlight";
 import { saveOnboardingAction } from "@/server/actions";
 import type { OnboardingInput } from "@/lib/schemas";
 
@@ -118,7 +120,7 @@ export function OnboardingWizard({
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-6 py-10">
+    <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col bg-[#F6EFBE] px-6 py-10 text-zinc-950">
       <div className="mb-8">
         <p className="text-muted-foreground text-sm">
           Step {step + 1} of {STEPS.length}
@@ -138,7 +140,7 @@ export function OnboardingWizard({
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.2 }}
         >
-          <h1 className="text-3xl font-semibold">{STEPS[step]?.title}</h1>
+          <h1 className="text-3xl font-bold">{STEPS[step]?.title}</h1>
           <p className="text-muted-foreground mt-2">{STEPS[step]?.why}</p>
           <div className="mt-8 space-y-4">
             {renderStep(step, data, setData)}
@@ -153,10 +155,12 @@ export function OnboardingWizard({
           </Button>
         ) : null}
         {step < STEPS.length - 1 ? (
-          <Button onClick={() => void goNext()}>Continue</Button>
+          <Button onClick={() => void goNext()}>
+            Next <ChevronsRight className="h-4 w-4" />
+          </Button>
         ) : (
           <Button onClick={() => void persist(true, STEPS.length)}>
-            See my starting point
+            See my starting point <ChevronsRight className="h-4 w-4" />
           </Button>
         )}
         <Button variant="ghost" onClick={() => void persist(false, step)}>
@@ -210,7 +214,10 @@ function renderStep(
     return (
       <p className="text-lg leading-8">
         We’ll go one question at a time. Guessing is allowed. You can refine
-        everything later.
+        everything later — from{" "}
+        <Highlight tone="mint">bills</Highlight> to a{" "}
+        <Highlight tone="lavender">home</Highlight> or{" "}
+        <Highlight tone="blush">goal</Highlight>.
       </p>
     );
   }
@@ -222,7 +229,7 @@ function renderStep(
             key={mode}
             type="button"
             onClick={() => setData({ ...data, mode })}
-            className={`rounded-3xl border px-4 py-4 text-left ${data.mode === mode ? "border-primary bg-accent" : "border-border"}`}
+            className={`rounded-full border px-5 py-4 text-left ${data.mode === mode ? "border-transparent bg-sun" : "border-border bg-card"}`}
           >
             <span className="font-semibold capitalize">
               {mode.toLowerCase()}
@@ -239,7 +246,7 @@ function renderStep(
           <Label htmlFor="currency">Currency</Label>
           <select
             id="currency"
-            className="border-input h-11 w-full rounded-2xl border px-3"
+            className="border-input bg-card h-12 w-full rounded-full border px-5"
             value={data.currency}
             onChange={(event) =>
               setData({
@@ -404,7 +411,7 @@ function renderStep(
             <button
               key={goal}
               type="button"
-              className={`rounded-2xl border px-4 py-3 text-left ${on ? "border-primary bg-accent" : "border-border"}`}
+              className={`rounded-full border px-5 py-3 text-left ${on ? "border-transparent bg-sun" : "border-border bg-card"}`}
               onClick={() =>
                 setData({
                   ...data,
@@ -451,7 +458,7 @@ function renderStep(
   const flex = Number(data.flexibleSpending || 0);
   const leftover = income - bills - flex;
   return (
-    <div className="border-border bg-card rounded-3xl border p-6">
+    <div className="border-border bg-card rounded-[1.75rem] p-6">
       <h2 className="text-xl font-semibold">Your financial starting point</h2>
       <p className="mt-3 leading-7">
         {data.householdName} is set up as a {data.mode.toLowerCase()} household

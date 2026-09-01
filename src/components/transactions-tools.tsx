@@ -29,7 +29,7 @@ export function TransactionsTools() {
         />
         <select
           name="type"
-          className="border-input h-11 rounded-2xl border px-3"
+          className="border-input h-12 rounded-full border px-5"
         >
           <option value="">All types</option>
           <option value="INCOME">Income</option>

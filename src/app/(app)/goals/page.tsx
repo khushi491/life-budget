@@ -25,7 +25,7 @@ export default async function GoalsPage({
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-semibold">Goals</h1>
+        <h1 className="text-3xl font-bold">Goals</h1>
         <p className="text-muted-foreground mt-2">
           Each goal has a target, a pace, and a date. Adjust the contribution to
           see a new finish line immediately.
@@ -108,7 +108,7 @@ export default async function GoalsPage({
             <select
               id="type"
               name="type"
-              className="h-11 w-full rounded-2xl border px-3"
+              className="h-12 w-full rounded-full border px-5"
             >
               <option value="EMERGENCY_FUND">Emergency fund</option>
               <option value="HOUSE_DOWN_PAYMENT">House down payment</option>

@@ -41,7 +41,7 @@ export default async function BudgetPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-semibold">Budget builder</h1>
+        <h1 className="text-3xl font-bold">Budget builder</h1>
         <p className="text-muted-foreground mt-2 max-w-2xl">
           Allocate every dollar (or rupee) in order: income, required bills,
           essentials, lifestyle, savings, then debt. If the plan exceeds income,

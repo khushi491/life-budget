@@ -3,9 +3,8 @@ import { test, expect } from "@playwright/test";
 test("demo couple can open the dashboard story", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: /Jordan & Sam/ }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    /You earned/i,
-  );
+  await expect(page.getByText(/Current leftover/i)).toBeVisible();
+  await expect(page.getByText(/You earned/i)).toBeVisible();
 });
 
 test("onboarding is reachable after signup", async ({ page }) => {
@@ -16,7 +15,7 @@ test("onboarding is reachable after signup", async ({ page }) => {
   await page.getByLabel("Password").fill("PlaywrightPass1");
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page.getByRole("heading", { name: "Welcome" })).toBeVisible();
-  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: /Next/ }).click();
   await expect(page.getByText("Who is this for?")).toBeVisible();
 });
 

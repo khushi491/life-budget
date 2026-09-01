@@ -49,7 +49,7 @@ export default async function DebtsPage({
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-semibold">Debts</h1>
+        <h1 className="text-3xl font-bold">Debts</h1>
         <p className="text-muted-foreground mt-2">
           Snowball pays the smallest balance first for momentum. Avalanche pays
           the highest interest first to save money.
@@ -132,7 +132,7 @@ export default async function DebtsPage({
                   id={`type-${row.id}`}
                   name="type"
                   defaultValue={row.type}
-                  className="h-11 w-full rounded-2xl border px-3"
+                  className="h-12 w-full rounded-full border px-5"
                 >
                   {LIABILITY_TYPES.map(([value, label]) => (
                     <option key={value} value={value}>
@@ -196,7 +196,7 @@ export default async function DebtsPage({
             <select
               id="type"
               name="type"
-              className="h-11 w-full rounded-2xl border px-3"
+              className="h-12 w-full rounded-full border px-5"
               defaultValue="CREDIT_CARD"
             >
               {LIABILITY_TYPES.map(([value, label]) => (

@@ -74,7 +74,7 @@ export function BudgetBuilder({
   }
 
   return (
-    <div className="border-border bg-card rounded-3xl border p-6">
+    <div className="bg-card rounded-[1.75rem] p-6">
       <p className="text-muted-foreground text-sm">
         Step {step + 1} of {STEPS.length}: {STEPS[step]}
       </p>
@@ -146,7 +146,7 @@ export function BudgetBuilder({
             </div>
           ) : null}
         </div>
-        <aside className="bg-muted rounded-2xl p-4 text-sm">
+        <aside className="bg-mint rounded-[1.5rem] p-4 text-sm">
           <p>Income {formatMoney(incomeValue, currency)}</p>
           <p className="mt-1">Allocated {formatMoney(allocated, currency)}</p>
           <p className="mt-1">Remaining {formatMoney(remaining, currency)}</p>

@@ -40,7 +40,7 @@ export default async function HousePage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-semibold">House planner</h1>
+        <h1 className="text-3xl font-bold">House planner</h1>
         <p className="text-muted-foreground mt-2 max-w-2xl">
           These results are educational estimates, not professional financial
           advice. We use your household’s actual income, savings, debts, and

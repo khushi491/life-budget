@@ -33,7 +33,7 @@ export default async function BillsPage({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-semibold">Recurring bills</h1>
+        <h1 className="text-3xl font-bold">Recurring bills</h1>
         <p className="text-muted-foreground mt-2">
           These are the must-pays we expect to see again next cycle.
         </p>
@@ -77,7 +77,7 @@ export default async function BillsPage({
                     id={`bill-freq-${bill.id}`}
                     name="frequency"
                     defaultValue={bill.frequency}
-                    className="h-11 w-full rounded-2xl border px-3"
+                    className="h-12 w-full rounded-full border px-5"
                   >
                     <option value="WEEKLY">Weekly</option>
                     <option value="BIWEEKLY">Every two weeks</option>
@@ -102,7 +102,7 @@ export default async function BillsPage({
                     id={`bill-cat-${bill.id}`}
                     name="categoryId"
                     defaultValue={bill.categoryId ?? ""}
-                    className="h-11 w-full rounded-2xl border px-3"
+                    className="h-12 w-full rounded-full border px-5"
                   >
                     <option value="">Uncategorized</option>
                     {categories.map((category) => (
@@ -148,7 +148,7 @@ export default async function BillsPage({
             <select
               id="frequency"
               name="frequency"
-              className="h-11 w-full rounded-2xl border px-3"
+              className="h-12 w-full rounded-full border px-5"
               defaultValue="MONTHLY"
             >
               <option value="WEEKLY">Weekly</option>
@@ -167,7 +167,7 @@ export default async function BillsPage({
             <select
               id="categoryId"
               name="categoryId"
-              className="h-11 w-full rounded-2xl border px-3"
+              className="h-12 w-full rounded-full border px-5"
             >
               <option value="">Uncategorized</option>
               {categories.map((category) => (

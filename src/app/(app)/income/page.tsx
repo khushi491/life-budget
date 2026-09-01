@@ -16,7 +16,7 @@ export default async function IncomePage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-semibold">Income</h1>
+        <h1 className="text-3xl font-bold">Income</h1>
         <p className="text-muted-foreground mt-2">
           Take-home pay, bonuses, and other money entering the household.
         </p>

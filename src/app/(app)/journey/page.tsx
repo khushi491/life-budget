@@ -16,7 +16,7 @@ export default async function JourneyPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-semibold">Your financial journey</h1>
+        <h1 className="text-3xl font-bold">Your financial journey</h1>
         <p className="text-muted-foreground mt-2 max-w-2xl">
           Milestones mark safety and optionality — not a race. There are no
           streaks or leaderboards.

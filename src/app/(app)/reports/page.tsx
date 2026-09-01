@@ -24,7 +24,7 @@ export default async function ReportsPage({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-semibold">Reports</h1>
+        <h1 className="text-3xl font-bold">Reports</h1>
         <p className="text-muted-foreground mt-2">
           The same numbers used on the dashboard, grouped by period.
         </p>

@@ -46,7 +46,7 @@ export default async function TransactionsPage({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-semibold">Money in and out</h1>
+        <h1 className="text-3xl font-bold">Money in and out</h1>
         <p className="text-muted-foreground mt-2">
           Search, filter, import a CSV, or add a movement. Demo bank rows can be
           pulled in without a live bank connection.

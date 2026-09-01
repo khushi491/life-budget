@@ -22,7 +22,7 @@ export default async function InvitePage({
   if (!invitation) {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center px-6">
-        <h1 className="text-3xl font-semibold">Invite not found</h1>
+        <h1 className="text-3xl font-bold">Invite not found</h1>
         <p className="text-muted-foreground mt-3">
           This link is missing or was typed incorrectly.
         </p>
@@ -35,7 +35,7 @@ export default async function InvitePage({
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center px-6">
-      <h1 className="text-3xl font-semibold">Join {invitation.household.name}</h1>
+      <h1 className="text-3xl font-bold">Join {invitation.household.name}</h1>
       <p className="text-muted-foreground mt-3">
         This invite is for {invitation.email} as a{" "}
         {invitation.role.toLowerCase()}.

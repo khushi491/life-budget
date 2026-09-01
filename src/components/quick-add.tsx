@@ -61,7 +61,7 @@ function QuickAddForm({
           <select
             id="type"
             name="type"
-            className="border-input bg-background h-11 w-full rounded-2xl border px-3"
+            className="border-input bg-card h-12 w-full rounded-full border px-5"
           >
             <option value="EXPENSE">Money went out</option>
             <option value="INCOME">Money came in</option>
@@ -97,7 +97,7 @@ function QuickAddForm({
           <select
             id="categoryId"
             name="categoryId"
-            className="border-input bg-background h-11 w-full rounded-2xl border px-3"
+            className="border-input bg-card h-12 w-full rounded-full border px-5"
           >
             <option value="">Choose a category</option>
             {categories.map((category) => (
@@ -112,7 +112,7 @@ function QuickAddForm({
           <select
             id="visibility"
             name="visibility"
-            className="border-input bg-background h-11 w-full rounded-2xl border px-3"
+            className="border-input bg-card h-12 w-full rounded-full border px-5"
           >
             <option value="SHARED">Shared with household</option>
             <option value="PRIVATE">Private</option>

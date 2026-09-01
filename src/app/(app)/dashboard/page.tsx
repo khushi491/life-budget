@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/form";
 import { Card, CardHint, CardTitle } from "@/components/ui/card";
 import { fromMinor } from "@/lib/finance";
+import { ProgressRing } from "@/components/progress-ring";
 
 export default async function DashboardPage({
   searchParams,
@@ -29,24 +30,33 @@ export default async function DashboardPage({
   });
   const currency = household.currency;
   const now = new Date();
+  const spentPct = Math.min(
+    100,
+    Number((data.expenseMinor * 100n) / (data.incomeMinor || 1n)),
+  );
 
   return (
     <div className="space-y-8">
-      <header>
-        <p className="text-primary text-sm font-medium">This month’s story</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+      <header className="rounded-[2rem] bg-zinc-950 px-6 py-7 text-white">
+        <p className="text-sm font-medium text-white/70">
+          Hello, {member.displayName}
+        </p>
+        <p className="mt-4 text-sm text-white/70">Current leftover</p>
+        <h1 className="mt-1 text-4xl font-bold tracking-tight">
+          {formatMoney(data.remainingMinor, currency)}
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80">
           You earned {formatMoney(data.incomeMinor, currency)}{" "}
           {view === "month" ? "this month" : `this ${view}`}. After{" "}
           {formatMoney(data.expenseMinor - data.savingsMinor, currency)} in
-          expenses and {formatMoney(data.savingsMinor, currency)} in savings,
-          you have {formatMoney(data.remainingMinor, currency)} available.
-        </h1>
-        <div className="mt-4 flex gap-2">
+          expenses and {formatMoney(data.savingsMinor, currency)} in savings.
+        </p>
+        <div className="mt-5 flex gap-2">
           {(["month", "quarter", "year"] as const).map((option) => (
             <Link
               key={option}
               href={`/dashboard?view=${option}`}
-              className={`rounded-full px-3 py-1 text-sm ${view === option ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+              className={`rounded-full px-4 py-1.5 text-sm ${view === option ? "bg-white text-zinc-950" : "bg-white/15 text-white"}`}
             >
               {option}
             </Link>
@@ -54,28 +64,39 @@ export default async function DashboardPage({
         </div>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card className="bg-mint flex items-center justify-between">
+          <div>
+            <p className="text-3xl font-bold">
+              {formatMoney(data.expenseMinor, currency)}
+            </p>
+            <p className="mt-1 text-sm font-medium">Spent</p>
+          </div>
+          <ProgressRing percent={spentPct} />
+        </Card>
+        <Card className="bg-lavender flex items-center justify-between">
+          <div>
+            <p className="text-3xl font-bold">
+              {formatMoney(data.incomeMinor, currency)}
+            </p>
+            <p className="mt-1 text-sm font-medium">Earned</p>
+          </div>
+          <ProgressRing percent={100} />
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
         {[
           ["Health", `${data.health.score}`, data.health.summary],
           [
-            "Income",
-            formatMoney(data.incomeMinor, currency),
-            monthLabel(now.getFullYear(), now.getMonth() + 1),
-          ],
-          [
-            "Spending",
-            formatMoney(data.expenseMinor, currency),
-            "Including savings contributions",
-          ],
-          [
             "Net worth",
             formatMoney(data.netWorthMinor, currency),
-            "Assets minus debts",
+            monthLabel(now.getFullYear(), now.getMonth() + 1),
           ],
         ].map(([label, value, hint]) => (
           <Card key={label}>
             <p className="text-muted-foreground text-sm">{label}</p>
-            <p className="mt-1 text-2xl font-semibold">{value}</p>
+            <p className="mt-1 text-2xl font-bold">{value}</p>
             <p className="text-muted-foreground mt-2 text-xs leading-5">
               {hint}
             </p>
@@ -108,7 +129,7 @@ export default async function DashboardPage({
               </li>
             ) : (
               data.insights.map((insight) => (
-                <li key={insight.id} className="bg-muted rounded-2xl px-4 py-3">
+                <li key={insight.id} className="bg-muted rounded-full px-5 py-3">
                   <div className="flex items-center gap-2">
                     <Badge
                       tone={
@@ -132,7 +153,7 @@ export default async function DashboardPage({
                   </p>
                   <Link
                     href={insight.href}
-                    className="text-primary mt-2 inline-block text-sm font-medium"
+                    className="mt-2 inline-block text-sm font-medium"
                   >
                     {insight.nextStep}
                   </Link>
@@ -198,7 +219,10 @@ export default async function DashboardPage({
           <CardTitle>Upcoming bills</CardTitle>
           <ul className="mt-4 space-y-2 text-sm">
             {data.household.recurrenceRules.slice(0, 5).map((bill) => (
-              <li key={bill.id} className="flex justify-between">
+              <li
+                key={bill.id}
+                className="bg-muted flex justify-between rounded-full px-4 py-2"
+              >
                 <span>{bill.name}</span>
                 <span>{formatMoney(bill.amountMinor, currency)}</span>
               </li>
@@ -209,11 +233,16 @@ export default async function DashboardPage({
           <CardTitle>Recent movements</CardTitle>
           <ul className="mt-4 space-y-2 text-sm">
             {data.recentTx.slice(0, 5).map((tx) => (
-              <li key={tx.id} className="flex justify-between gap-3">
+              <li
+                key={tx.id}
+                className="flex justify-between gap-3 rounded-full px-1 py-1"
+              >
                 <span className="truncate">
                   {tx.merchant ?? tx.category?.name ?? tx.type}
                 </span>
-                <span>{formatMoney(tx.amountMinor, currency)}</span>
+                <span className="font-medium">
+                  {formatMoney(tx.amountMinor, currency)}
+                </span>
               </li>
             ))}
           </ul>

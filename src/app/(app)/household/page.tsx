@@ -38,7 +38,7 @@ export default async function HouseholdPage({
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-semibold">Household</h1>
+        <h1 className="text-3xl font-bold">Household</h1>
         <p className="text-muted-foreground mt-2">
           Change between individual, couple, and family without deleting
           history. Mode only changes how we ask questions and split shared
@@ -78,7 +78,7 @@ export default async function HouseholdPage({
           {members.map((member) => (
             <li
               key={member.id}
-              className="bg-muted flex items-center justify-between rounded-2xl px-4 py-3"
+              className="bg-muted flex items-center justify-between rounded-full px-4 py-3"
             >
               <div>
                 <p className="font-medium">{member.displayName}</p>
@@ -106,7 +106,7 @@ export default async function HouseholdPage({
             <select
               id="role"
               name="role"
-              className="h-11 w-full rounded-2xl border px-3"
+              className="h-12 w-full rounded-full border px-5"
               defaultValue="PARTNER"
             >
               <option value="PARTNER">Partner</option>
@@ -139,7 +139,7 @@ export default async function HouseholdPage({
             <select
               id="invite-role"
               name="role"
-              className="h-11 w-full rounded-2xl border px-3"
+              className="h-12 w-full rounded-full border px-5"
               defaultValue="PARTNER"
             >
               <option value="PARTNER">Partner</option>
@@ -158,7 +158,7 @@ export default async function HouseholdPage({
             return (
               <li
                 key={invite.id}
-                className="bg-muted flex flex-col gap-3 rounded-2xl px-4 py-3 md:flex-row md:items-center md:justify-between"
+                className="bg-muted flex flex-col gap-3 rounded-full px-4 py-3 md:flex-row md:items-center md:justify-between"
               >
                 <div>
                   <p className="font-medium">{invite.email}</p>

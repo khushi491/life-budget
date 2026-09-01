@@ -13,7 +13,7 @@ export default async function SimulatorPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-semibold">What-if simulator</h1>
+        <h1 className="text-3xl font-bold">What-if simulator</h1>
         <p className="text-muted-foreground mt-2 max-w-2xl">
           Move the sliders. Charts update from the same formulas the house
           planner uses. Presets are starting points, not advice.

@@ -76,7 +76,7 @@ export default async function ScenariosPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-semibold">Scenario comparison</h1>
+        <h1 className="text-3xl font-bold">Scenario comparison</h1>
         <p className="text-muted-foreground mt-2">
           Compare renting, buying now, buying later, and different down
           payments. The chart uses this household’s real savings rate — we will

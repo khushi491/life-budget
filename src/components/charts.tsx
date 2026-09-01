@@ -17,12 +17,12 @@ import {
 } from "recharts";
 
 const COLORS = [
-  "#0f766e",
-  "#1d4ed8",
-  "#b45309",
-  "#7c3aed",
-  "#be123c",
-  "#475569",
+  "#9BE36B",
+  "#C4B5FD",
+  "#F9A8D4",
+  "#FDE047",
+  "#93C5FD",
+  "#111111",
 ];
 
 export function ChartCard({
@@ -39,8 +39,8 @@ export function ChartCard({
   empty?: boolean;
 }) {
   return (
-    <section className="border-border bg-card rounded-3xl border p-6">
-      <h2 className="text-lg font-semibold">{title}</h2>
+    <section className="bg-card rounded-[1.75rem] p-6">
+      <h2 className="text-lg font-bold">{title}</h2>
       <p className="text-muted-foreground mt-1 text-sm leading-6">
         {explanation}
       </p>
@@ -74,13 +74,13 @@ export function IncomeExpenseChart({
         <Legend />
         <Bar
           dataKey="income"
-          fill="#0f766e"
+          fill="#9BE36B"
           name="Income"
           radius={[8, 8, 0, 0]}
         />
         <Bar
           dataKey="expense"
-          fill="#b45309"
+          fill="#C4B5FD"
           name="Spending"
           radius={[8, 8, 0, 0]}
         />
@@ -101,9 +101,10 @@ export function ExpenseDonut({
           data={data}
           dataKey="value"
           nameKey="name"
-          innerRadius={58}
-          outerRadius={88}
-          paddingAngle={2}
+          innerRadius={70}
+          outerRadius={90}
+          paddingAngle={3}
+          stroke="none"
         >
           {data.map((entry, index) => (
             <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
@@ -131,8 +132,8 @@ export function NetWorthChart({
         <Line
           type="monotone"
           dataKey="value"
-          stroke="#0f766e"
-          strokeWidth={2}
+          stroke="#111111"
+          strokeWidth={3}
           dot={false}
           name="Net worth"
         />
@@ -156,13 +157,13 @@ export function ComparisonChart({
         <Legend />
         <Bar
           dataKey="rent"
-          fill="#1d4ed8"
+          fill="#C4B5FD"
           name="Renting net worth"
           radius={[8, 8, 0, 0]}
         />
         <Bar
           dataKey="buy"
-          fill="#0f766e"
+          fill="#9BE36B"
           name="Buying net worth"
           radius={[8, 8, 0, 0]}
         />
@@ -192,21 +193,21 @@ export function MortgageBalanceChart({
         <Line
           type="monotone"
           dataKey="balance"
-          stroke="#1d4ed8"
+          stroke="#111111"
           name="Remaining balance"
           dot={false}
         />
         <Line
           type="monotone"
           dataKey="principal"
-          stroke="#0f766e"
+          stroke="#9BE36B"
           name="Principal paid"
           dot={false}
         />
         <Line
           type="monotone"
           dataKey="interest"
-          stroke="#b45309"
+          stroke="#F9A8D4"
           name="Interest paid"
           dot={false}
         />

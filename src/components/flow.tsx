@@ -45,7 +45,7 @@ export function CashFlow({
             </div>
             <div className="bg-muted mt-1 h-3 overflow-hidden rounded-full">
               <div
-                className="h-full rounded-full bg-emerald-700/80 dark:bg-emerald-400/80"
+                className="bg-mint h-full rounded-full"
                 style={{ width: `${width}%` }}
               />
             </div>
@@ -92,10 +92,10 @@ export function BudgetBars({
               <div
                 className={
                   over
-                    ? "h-full bg-red-600"
+                    ? "bg-blush h-full"
                     : pct >= 80
-                      ? "h-full bg-amber-500"
-                      : "h-full bg-emerald-700"
+                      ? "bg-sun h-full"
+                      : "bg-mint h-full"
                 }
                 style={{ width: `${pct}%` }}
               />

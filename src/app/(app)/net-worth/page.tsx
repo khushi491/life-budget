@@ -47,7 +47,7 @@ export default async function NetWorthPage({
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-semibold">Net worth</h1>
+        <h1 className="text-3xl font-bold">Net worth</h1>
         <p className="mt-2 text-2xl font-semibold">
           {formatMoney(assetsMinor - liabilitiesMinor, household.currency)}
         </p>
@@ -97,7 +97,7 @@ export default async function NetWorthPage({
                   <select
                     name="type"
                     defaultValue={row.type}
-                    className="h-11 rounded-2xl border px-3"
+                    className="h-12 rounded-full border px-5"
                   >
                     {ASSET_TYPES.map(([value, label]) => (
                       <option key={value} value={value}>
@@ -130,7 +130,7 @@ export default async function NetWorthPage({
             <Input id="asset-name" name="name" placeholder="Name" required />
             <select
               name="type"
-              className="h-11 rounded-2xl border px-3"
+              className="h-12 rounded-full border px-5"
               defaultValue="CASH"
             >
               {ASSET_TYPES.map(([value, label]) => (

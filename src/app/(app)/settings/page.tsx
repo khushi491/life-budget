@@ -10,7 +10,7 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-semibold">Settings</h1>
+        <h1 className="text-3xl font-bold">Settings</h1>
       </header>
       <Card>
         <CardTitle>Household</CardTitle>

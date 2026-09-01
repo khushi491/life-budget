@@ -32,7 +32,7 @@ export function GoalSimulator({
   );
 
   return (
-    <div className="bg-muted mt-4 rounded-2xl p-4">
+    <div className="bg-muted mt-4 rounded-[1.5rem] p-4">
       <label className="text-sm font-medium">
         If you set aside{" "}
         {formatMoney(BigInt(Math.round(monthly * 100)), currency)} each month
