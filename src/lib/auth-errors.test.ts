@@ -16,6 +16,18 @@ describe("authActionErrorMessage", () => {
     ).toBe("That email is already in use. Sign in, or try a different one.");
   });
 
+  it("maps a top-level Better Auth API body", () => {
+    expect(
+      authActionErrorMessage(
+        {
+          code: "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL",
+          message: "User already exists. Use another email.",
+        },
+        "fallback",
+      ),
+    ).toBe("That email is already in use. Sign in, or try a different one.");
+  });
+
   it("falls back when the error has no Better Auth code", () => {
     expect(authActionErrorMessage(new Error("boom"), "Please try again.")).toBe(
       "Please try again.",

@@ -78,6 +78,7 @@ export async function signUpAction(formData: FormData): Promise<void> {
     await signUpWithEmail(parsed.data);
   } catch (error) {
     unstable_rethrow(error);
+    console.error("signUpAction failed", error);
     redirect(
       `/signup?error=${encodeURIComponent(authActionErrorMessage(error, "We could not create that account. Please try again."))}`,
     );

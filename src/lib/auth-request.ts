@@ -13,6 +13,13 @@ class AuthRequestError extends Error {
   }
 }
 
+function sameSiteValue(
+  value: unknown,
+): "lax" | "strict" | "none" | undefined {
+  if (value === "lax" || value === "strict" || value === "none") return value;
+  return undefined;
+}
+
 async function applyAuthCookies(response: Response) {
   const store = await cookies();
   const setCookies =
@@ -30,14 +37,25 @@ async function applyAuthCookies(response: Response) {
     for (const [name, attributes] of parseSetCookieHeader(header)) {
       if (!name) continue;
       const options = toCookieOptions(attributes);
-      store.set(name, attributes.value, {
-        path: options.path ?? "/",
-        ...(options.maxAge !== undefined ? { maxAge: options.maxAge } : {}),
-        ...(options.expires ? { expires: options.expires } : {}),
-        ...(options.httpOnly !== undefined ? { httpOnly: options.httpOnly } : {}),
-        ...(options.secure !== undefined ? { secure: options.secure } : {}),
-        ...(options.sameSite ? { sameSite: options.sameSite } : {}),
-      });
+      try {
+        store.set(name, attributes.value, {
+          path: options.path ?? "/",
+          ...(typeof options.maxAge === "number" && Number.isFinite(options.maxAge)
+            ? { maxAge: options.maxAge }
+            : {}),
+          ...(options.expires instanceof Date &&
+          !Number.isNaN(options.expires.getTime())
+            ? { expires: options.expires }
+            : {}),
+          ...(options.httpOnly !== undefined ? { httpOnly: options.httpOnly } : {}),
+          ...(options.secure !== undefined ? { secure: options.secure } : {}),
+          ...(sameSiteValue(options.sameSite)
+            ? { sameSite: sameSiteValue(options.sameSite) }
+            : {}),
+        });
+      } catch (error) {
+        console.error(`Failed to set auth cookie ${name}`, error);
+      }
     }
   }
 }
@@ -58,11 +76,12 @@ async function callAuthApi(
     }),
   );
 
+  const payload = (await response.json().catch(() => ({}))) as {
+    code?: string;
+    message?: string;
+  };
+
   if (!response.ok) {
-    const payload = (await response.json().catch(() => ({}))) as {
-      code?: string;
-      message?: string;
-    };
     throw new AuthRequestError(
       {
         code: payload.code,
