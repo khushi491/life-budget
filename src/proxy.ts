@@ -7,6 +7,12 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith("/api") || pathname.startsWith("/_next") || pathname.includes(".")) {
     return NextResponse.next();
   }
+  if (
+    pathname.startsWith("/icon") ||
+    pathname.startsWith("/apple-icon")
+  ) {
+    return NextResponse.next();
+  }
   const session = request.cookies.get("better-auth.session_token");
   const isPublic = publicPaths.has(pathname) || pathname.startsWith("/invite/");
   if (!session && !isPublic) {

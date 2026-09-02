@@ -111,6 +111,12 @@ body {
   font-family: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
 }
 
+@media (display-mode: standalone) {
+  body {
+    min-height: 100dvh;
+  }
+}
+
 :focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;

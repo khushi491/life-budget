@@ -114,7 +114,7 @@ export function AppShell({
         <main className="px-4 py-6 pb-28 lg:px-8 lg:pb-10">{children}</main>
       </div>
 
-      <nav className="fixed bottom-4 left-4 right-4 z-20 mx-auto flex max-w-md items-center justify-between rounded-full bg-zinc-950 px-2 py-2 text-white lg:hidden">
+      <nav className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 z-20 mx-auto flex max-w-md items-center justify-between rounded-full bg-zinc-950 px-2 py-2 text-white lg:hidden">
         {MOBILE_NAV.map((item) => {
           const Icon = MOBILE_ICONS[item.href];
           const active = pathname === item.href;

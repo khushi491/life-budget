@@ -70,3 +70,22 @@ test("scenario comparison table uses calculated values", async ({ page }) => {
   await expect(page.getByText("Buy now — Oak Street two-bed")).toBeVisible();
   await expect(page.getByText("Smaller condo")).toBeVisible();
 });
+
+test("pwa manifest and icons are available without a session", async ({
+  request,
+}) => {
+  const manifest = await request.get("/manifest.webmanifest");
+  expect(manifest.ok()).toBeTruthy();
+  const body = (await manifest.json()) as {
+    name: string;
+    display: string;
+    icons: { src: string }[];
+  };
+  expect(body.name).toBe("LifeBudget");
+  expect(body.display).toBe("standalone");
+  expect(body.icons.length).toBeGreaterThan(0);
+
+  const icon = await request.get("/icon-192");
+  expect(icon.ok()).toBeTruthy();
+  expect(icon.headers()["content-type"]).toMatch(/image\/png/);
+});
